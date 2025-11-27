@@ -1,23 +1,25 @@
-# Use the official image as a parent image
-# Description: Dockerfile for the client side of the MERN stack application
-
-# Use the official image as a parent image
-FROM node
+# 1. Use a specific, stable version of Node.
+# Using 'node:lts' is a good balance between stability and features.
+FROM node:lts 
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the file from your host to your current location
-COPY package.json .
+# 2. Copy both package.json and package-lock.json (if it exists)
+# This is crucial for consistent builds and is what Docker's caching relies on.
+COPY package*.json ./
 
-# Run the command inside your image filesystem
-RUN npm install
+# Install dependencies
+# This is placed here to utilize Docker's build cache. If only source code changes, 
+# this step won't rerun.
+RUN npm install 
 
-# Inform Docker that the container is listening on the specified port at runtime
-EXPOSE 5173
-
-# Copy the rest of your app's source code from your host to your image filesystem
+# 3. Copy the rest of the application source code AFTER installing dependencies
 COPY . .
+ 
+# Expose the application port. 5173 is common for Vite/frontend dev.
+EXPOSE 5173 
 
-# Run the specified command within the container
+# 4. Define the command to start the application.
+# If you are running a development server (like 'npm run dev'), ensure it binds to '0.0.0.0'.
 CMD ["npm", "run", "dev"]
